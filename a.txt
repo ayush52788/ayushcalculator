@@ -1,1 +1,325 @@
+<!-- 
+    SECTION 1: HTML STRUCTURE 
+    Save this part as index.html (and link the css/js files) if separating.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Standard Calculator</title>
+    <!-- Tailwind CSS for layout utility -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- 
+        SECTION 2: CSS STYLING 
+        If separating, move everything inside <style> to a file named 'style.css'
+    -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Nunito:wght@400;600;800&display=swap');
+
+        :root {
+            --bg-color: #e0e5ec;
+            --text-main: #4b5563;
+            --shadow-light: #ffffff;
+            --shadow-dark: #a3b1c6;
+            --accent-blue: #3b82f6;
+            --accent-red: #ef4444;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            touch-action: manipulation;
+        }
+
+        .calc-font {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Neumorphic Body */
+        .calculator-body {
+            background-color: var(--bg-color);
+            border-radius: 30px;
+            box-shadow: 
+                20px 20px 60px #bec3c9, 
+                -20px -20px 60px #ffffff;
+        }
+
+        /* Display Screen (Inset Neumorphism) */
+        .display-screen {
+            background-color: var(--bg-color);
+            border-radius: 15px;
+            box-shadow: 
+                inset 6px 6px 12px #bec3c9, 
+                inset -6px -6px 12px #ffffff;
+            color: var(--text-main);
+        }
+
+        /* Scrollbar styling */
+        .history-scroll::-webkit-scrollbar { width: 4px; }
+        .history-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+        /* Button Styling (Outset Neumorphism) */
+        .btn {
+            border: none;
+            outline: none;
+            background-color: var(--bg-color);
+            border-radius: 12px;
+            box-shadow: 
+                6px 6px 10px #bec3c9, 
+                -6px -6px 10px #ffffff;
+            color: var(--text-main);
+            font-size: 1.25rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Button Active State (Pressed) */
+        .btn:active {
+            box-shadow: 
+                inset 4px 4px 8px #bec3c9, 
+                inset -4px -4px 8px #ffffff;
+            transform: scale(0.98);
+        }
+
+        /* Specific Button Colors */
+        .btn-op { color: var(--accent-blue); font-weight: 800; }
+        .btn-danger { color: var(--accent-red); font-weight: 800; }
+        .btn-warn { color: #f59e0b; }
+        
+        /* The Equals Button (Colored Neumorphism) */
+        .btn-action {
+            background-color: var(--accent-blue);
+            color: white;
+            box-shadow: 
+                6px 6px 10px #93c5fd, 
+                -6px -6px 10px #ffffff;
+        }
+        .btn-action:active {
+            background-color: #2563eb;
+            box-shadow: inset 4px 4px 8px #1e40af;
+        }
+
+        /* Grid Layout */
+        .keys-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div class="calculator-body relative w-full max-w-sm p-6">
+        
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-6 text-xs font-bold text-gray-500 tracking-wider">
+            <div class="flex items-center gap-2">
+                <i class="fas fa-calculator text-blue-500"></i> STANDARD
+            </div>
+            <div class="text-[10px] uppercase opacity-50">Light Mode</div>
+        </div>
+
+        <!-- Display Area -->
+        <div class="display-screen p-4 mb-8 relative overflow-hidden flex flex-col justify-end min-h-[120px]">
+            <!-- History Tape -->
+            <div id="historyDisplay" class="history-scroll h-8 text-right text-xs text-gray-400 overflow-y-auto mb-1 font-mono">
+                <!-- History items go here -->
+            </div>
+            
+            <!-- Main Input/Output -->
+            <input type="text" id="display" class="w-full bg-transparent text-right text-4xl font-bold outline-none border-none text-gray-700 calc-font placeholder-gray-300" placeholder="0" readonly>
+            
+            <!-- Preview Result (Ghost text) -->
+            <div id="previewDisplay" class="text-right text-blue-400 text-sm h-5 font-mono min-h-[1.25rem]"></div>
+        </div>
+
+        <!-- Keypad -->
+        <div class="keys-grid">
+            
+            <!-- Row 1 -->
+            <button class="btn btn-danger" onclick="clearDisplay()">AC</button>
+            <button class="btn btn-warn" onclick="deleteChar()"><i class="fas fa-backspace"></i></button>
+            <button class="btn btn-op" onclick="append('%')">%</button>
+            <button class="btn btn-op" onclick="append('/')">÷</button>
+
+            <!-- Row 2 -->
+            <button class="btn" onclick="append('7')">7</button>
+            <button class="btn" onclick="append('8')">8</button>
+            <button class="btn" onclick="append('9')">9</button>
+            <button class="btn btn-op" onclick="append('*')">×</button>
+
+            <!-- Row 3 -->
+            <button class="btn" onclick="append('4')">4</button>
+            <button class="btn" onclick="append('5')">5</button>
+            <button class="btn" onclick="append('6')">6</button>
+            <button class="btn btn-op" onclick="append('-')">−</button>
+
+            <!-- Row 4 -->
+            <button class="btn" onclick="append('1')">1</button>
+            <button class="btn" onclick="append('2')">2</button>
+            <button class="btn" onclick="append('3')">3</button>
+            <button class="btn btn-op" onclick="append('+')">+</button>
+
+            <!-- Row 5 -->
+            <button class="btn col-span-2" onclick="append('0')">0</button>
+            <button class="btn" onclick="append('.')">.</button>
+            <button class="btn btn-action" onclick="calculate()">=</button>
+            
+        </div>
+    </div>
+
+    <!-- 
+        SECTION 3: JAVASCRIPT LOGIC
+        If separating, move everything inside <script> to a file named 'script.js'
+    -->
+    <script>
+        const display = document.getElementById('display');
+        const previewDisplay = document.getElementById('previewDisplay');
+        const historyDisplay = document.getElementById('historyDisplay');
+
+        let expression = "";
+
+        // 1. Basic Append Function
+        function append(val) {
+            // Prevent multiple decimals in one number segment
+            if (val === '.' && expression.slice(-1) === '.') return;
+            
+            expression += val;
+            updateDisplay();
+        }
+
+        // 2. Clear Display Function
+        function clearDisplay() {
+            expression = "";
+            display.value = "";
+            previewDisplay.textContent = "";
+        }
+
+        // 3. Backspace Function
+        function deleteChar() {
+            expression = expression.slice(0, -1);
+            updateDisplay();
+        }
+
+        // 4. Update UI Function
+        function updateDisplay() {
+            // Make operators look nice
+            let displayString = expression
+                .replace(/\*/g, '×')
+                .replace(/\//g, '÷');
+
+            display.value = displayString || "0";
+            display.scrollLeft = display.scrollWidth;
+            
+            calculatePreview();
+        }
+
+        // 5. Live Preview Logic
+        function calculatePreview() {
+            if (!expression || expression.length < 2) {
+                previewDisplay.textContent = "";
+                return;
+            }
+            // Don't preview if ending with an operator
+            if (['+', '-', '*', '/', '.'].includes(expression.slice(-1))) return;
+
+            try {
+                const result = evaluateExpression(expression);
+                if (!isNaN(result) && isFinite(result)) {
+                    previewDisplay.textContent = formatNumber(result);
+                }
+            } catch (e) {
+                previewDisplay.textContent = "";
+            }
+        }
+
+        // 6. Main Calculation Function
+        function calculate() {
+            try {
+                if (!expression) return;
+
+                const result = evaluateExpression(expression);
+                
+                if (isNaN(result) || !isFinite(result)) {
+                    throw new Error("Invalid");
+                }
+
+                addToHistory(expression, result);
+
+                // Update state
+                expression = result.toString();
+                display.value = formatNumber(result);
+                previewDisplay.textContent = "";
+
+            } catch (error) {
+                display.value = "Error";
+                expression = "";
+                setTimeout(() => {
+                    display.value = "0";
+                }, 1500);
+            }
+        }
+
+        // 7. Math Evaluation Helper
+        function evaluateExpression(expr) {
+            let cleanExpr = expr;
+            // Handle percentages (e.g., 50% -> 50/100)
+            cleanExpr = cleanExpr.replace(/%/g, '/100');
+            
+            const func = new Function(`return ${cleanExpr};`);
+            return func();
+        }
+
+        // 8. Number Formatting Helper
+        function formatNumber(num) {
+            const str = num.toString();
+            // Avoid extremely long decimals
+            if (str.includes('.') && str.length > 10) {
+                return parseFloat(num.toFixed(8)).toString(); 
+            }
+            return str;
+        }
+
+        // 9. History Logic
+        function addToHistory(expr, res) {
+            const item = document.createElement('div');
+            let cleanExpr = expr.replace(/\*/g, '×').replace(/\//g, '÷');
+            
+            item.className = "py-1 border-b border-gray-300 hover:bg-gray-200 cursor-pointer px-2 rounded transition-colors";
+            item.innerHTML = `<span class="text-gray-500">${cleanExpr} = </span> <span class="text-blue-500 font-bold">${formatNumber(res)}</span>`;
+            
+            item.onclick = () => {
+                expression += res.toString();
+                updateDisplay();
+            };
+
+            historyDisplay.prepend(item);
+            
+            // Limit history items
+            if (historyDisplay.children.length > 10) {
+                historyDisplay.removeChild(historyDisplay.lastChild);
+            }
+        }
+
+        // 10. Keyboard Event Listeners
+        document.addEventListener('keydown', (e) => {
+            const key = e.key;
+            if (/[0-9]/.test(key)) append(key);
+            if (['+', '-', '*', '/', '%'].includes(key)) append(key);
+            if (key === '.') append('.');
+            if (key === 'Enter') { e.preventDefault(); calculate(); }
+            if (key === 'Backspace') deleteChar();
+            if (key === 'Escape') clearDisplay();
+        });
+    </script>
+</body>
+</html>
 
